@@ -3,8 +3,11 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-primary: #5CEDC3;
+  --color-secondary: #00A693;
+  --color-accent: #5A00D0;
+  --color-background: #E7F8F3;
+  --color-text: #1C1C1C;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -26,29 +29,45 @@ body {
   }
 
   body {
-    @apply text-gray-900 bg-white;
+    @apply bg-background text-text;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold;
+    @apply text-text font-bold;
+  }
+
+  a {
+    @apply text-primary hover:text-secondary transition-colors;
+  }
+
+  button {
+    @apply bg-primary hover:bg-secondary text-text font-semibold py-2 px-4 rounded-lg transition-colors;
   }
 }
 
 @layer components {
-  .container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  .section {
+    @apply py-16 px-4;
   }
 
-  .btn {
-    @apply inline-flex items-center justify-center px-6 py-3 rounded-full font-medium transition-colors;
+  .container {
+    @apply max-w-7xl mx-auto;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow-lg p-6;
   }
 
   .btn-primary {
-    @apply bg-blue-600 text-white hover:bg-blue-700;
+    @apply bg-primary hover:bg-secondary text-text font-semibold py-2 px-4 rounded-lg transition-colors;
   }
 
   .btn-secondary {
-    @apply border-2 border-gray-300 text-gray-700 hover:border-gray-400;
+    @apply bg-secondary hover:bg-primary text-white font-semibold py-2 px-4 rounded-lg transition-colors;
+  }
+
+  .btn-accent {
+    @apply bg-accent hover:bg-primary text-white font-semibold py-2 px-4 rounded-lg transition-colors;
   }
 }
 
