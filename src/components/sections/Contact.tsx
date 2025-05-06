@@ -2,32 +2,43 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ContactFormData } from '@/types';
+import { sendEmail } from '@/utils/emailConfig';
 
 const Contact = () => {
-  const [formData, setFormData] = useState<ContactFormData>({
+  const [formData, setFormData] = useState({
     name: '',
     email: '',
-    message: ''
+    message: '',
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null);
+  const [status, setStatus] = useState<{
+    type: 'success' | 'error' | null;
+    message: string;
+  }>({
+    type: null,
+    message: '',
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setSubmitStatus(null);
+    setStatus({ type: null, message: '' });
 
     try {
-      // Aqui você pode implementar a integração com EmailJS, Formspree ou outro serviço
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulação de envio
-      setSubmitStatus('success');
-      setFormData({ name: '', email: '', message: '' });
+      const response = await sendEmail(formData);
+      if (response.success) {
+        setStatus({
+          type: 'success',
+          message: 'Mensagem enviada com sucesso!',
+        });
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        throw new Error('Erro ao enviar mensagem');
+      }
     } catch (error) {
-      setSubmitStatus('error');
-    } finally {
-      setIsSubmitting(false);
+      setStatus({
+        type: 'error',
+        message: 'Erro ao enviar mensagem. Tente novamente.',
+      });
     }
   };
 
@@ -35,24 +46,24 @@ const Contact = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
-    <section id="contact" className="py-20 bg-gray-50">
+    <section id="contact" className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Entre em Contato
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-text">
+            Entre em <span className="text-primary">Contato</span>
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Tem alguma dúvida ou projeto em mente? Estamos aqui para ajudar!
+          <p className="text-lg text-text/80 max-w-2xl mx-auto">
+            Tem alguma dúvida ou projeto em mente? Entre em contato conosco!
           </p>
         </motion.div>
 
@@ -63,13 +74,13 @@ const Contact = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
             onSubmit={handleSubmit}
-            className="bg-white rounded-xl shadow-lg p-8"
+            className="bg-white rounded-lg shadow-lg p-8"
           >
             <div className="space-y-6">
               <div>
                 <label
                   htmlFor="name"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="block text-sm font-medium text-text mb-2"
                 >
                   Nome
                 </label>
@@ -80,16 +91,16 @@ const Contact = () => {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="block text-sm font-medium text-text mb-2"
                 >
-                  E-mail
+                  Email
                 </label>
                 <input
                   type="email"
@@ -98,14 +109,14 @@ const Contact = () => {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="message"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="block text-sm font-medium text-text mb-2"
                 >
                   Mensagem
                 </label>
@@ -116,33 +127,28 @@ const Contact = () => {
                   onChange={handleChange}
                   required
                   rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
 
+              {status.type && (
+                <div
+                  className={`p-4 rounded-lg ${
+                    status.type === 'success'
+                      ? 'bg-primary/10 text-primary'
+                      : 'bg-red-100 text-red-600'
+                  }`}
+                >
+                  {status.message}
+                </div>
+              )}
+
               <button
                 type="submit"
-                disabled={isSubmitting}
-                className={`w-full py-3 px-6 rounded-full text-white font-medium transition-colors ${
-                  isSubmitting
-                    ? 'bg-blue-400 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700'
-                }`}
+                className="w-full btn-primary"
               >
-                {isSubmitting ? 'Enviando...' : 'Enviar Mensagem'}
+                Enviar Mensagem
               </button>
-
-              {submitStatus === 'success' && (
-                <p className="text-green-600 text-center">
-                  Mensagem enviada com sucesso!
-                </p>
-              )}
-
-              {submitStatus === 'error' && (
-                <p className="text-red-600 text-center">
-                  Erro ao enviar mensagem. Tente novamente.
-                </p>
-              )}
             </div>
           </motion.form>
         </div>
